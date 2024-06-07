@@ -859,6 +859,8 @@
   #include "teensy4/pins_TEENSY41.h"                // Teensy-4.x                           env:teensy41
 #elif MB(T41U5XBB)
   #include "teensy4/pins_T41U5XBB.h"                // Teensy-4.x                           env:teensy41
+#elif MB(OPULO_LUMEN_REV4_H750)
+  #include "stm32h7/pins_OPULO_LUMEN_REV4_H750.h"   // STM32H7                              env:Opulo_Lumen_REV4_h750
 
 //
 // Espressif ESP32

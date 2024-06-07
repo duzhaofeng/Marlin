@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -20,6 +20,8 @@
  *
  */
 #pragma once
+
+#define CONFIG_EXAMPLES_DIR "Opulo/Lumen_REV4"
 
 /**
  * Configuration_adv.h
@@ -923,15 +925,14 @@
  * the position of the toolhead relative to the workspace.
  */
 
-//#define SENSORLESS_BACKOFF_MM  { 2, 2, 0 }  // (linear=mm, rotational=°) Backoff from endstops before sensorless homing
+#define SENSORLESS_BACKOFF_MM  { 2, 2, 0, 0, 0, 0 }  // (linear=mm, rotational=°) Backoff from endstops before sensorless homing
 
-#define HOMING_BUMP_MM      { 5, 5, 2 }       // (linear=mm, rotational=°) Backoff from endstops after first bump
-#define HOMING_BUMP_DIVISOR { 2, 2, 4 }       // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+#define HOMING_BUMP_MM      { 5, 5, 2, 2, 2, 5 } // (linear=mm, rotational=°) Backoff from endstops after first bump
+#define HOMING_BUMP_DIVISOR { 2, 2, 4, 4, 4, 2 } // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 
-//#define HOMING_BACKOFF_POST_MM { 2, 2, 2 }  // (linear=mm, rotational=°) Backoff from endstops after homing
-//#define XY_COUNTERPART_BACKOFF_MM 0         // (mm) Backoff X after homing Y, and vice-versa
+//#define HOMING_BACKOFF_POST_MM { 2, 2, 0, 0, 0, 0 }  // (linear=mm, rotational=°) Backoff from endstops after homing
 
-//#define QUICK_HOME                          // If G28 contains XY do a diagonal move first
+#define QUICK_HOME                            // If G28 contains XY do a diagonal move first
 //#define HOME_Y_BEFORE_X                     // If G28 contains XY home Y before X
 //#define HOME_Z_FIRST                        // Home Z first. Requires a real endstop (not a probe).
 //#define CODEPENDENT_XY_HOMING               // If X/Y can't home without homing Y/X first
@@ -1217,7 +1218,7 @@
 
 // @section motion
 
-#define AXIS_RELATIVE_MODES { false, false, false, false }
+#define AXIS_RELATIVE_MODES { false, false, false, false, false, false }
 
 // Add a Duplicate option for well-separated conjoined nozzles
 //#define MULTI_NOZZLE_DUPLICATION
@@ -1243,17 +1244,21 @@
 #define DISABLE_IDLE_X
 #define DISABLE_IDLE_Y
 #define DISABLE_IDLE_Z    // Disable if the nozzle could fall onto your printed part!
-//#define DISABLE_IDLE_I
-//#define DISABLE_IDLE_J
-//#define DISABLE_IDLE_K
+#define DISABLE_IDLE_I
+#define DISABLE_IDLE_J
+#define DISABLE_IDLE_K
 //#define DISABLE_IDLE_U
 //#define DISABLE_IDLE_V
 //#define DISABLE_IDLE_W
 #define DISABLE_IDLE_E    // Shut down all idle extruders
 
 // Default Minimum Feedrates for printing and travel moves
-#define DEFAULT_MINIMUMFEEDRATE       0.0     // (mm/s. °/s for rotational-only moves) Minimum feedrate. Set with M205 S.
-#define DEFAULT_MINTRAVELFEEDRATE     0.0     // (mm/s. °/s for rotational-only moves) Minimum travel feedrate. Set with M205 T.
+#define DEFAULT_MINIMUMFEEDRATE             0.0     // (mm/s) Minimum feedrate. Set with M205 S.
+#define DEFAULT_MINTRAVELFEEDRATE           0.0     // (mm/s) Minimum travel feedrate. Set with M205 T.
+#if HAS_ROTATIONAL_AXES
+  #define DEFAULT_ANGULAR_MINIMUMFEEDRATE   0.0     // (°/s) Minimum feedrate for rotational-only moves. Set with M205 P.
+  #define DEFAULT_ANGULAR_MINTRAVELFEEDRATE 0.0     // (°/s) Minimum travel feedrate for rotational-only moves. Set with M205 Q.
+#endif
 
 // Minimum time that a segment needs to take as the buffer gets emptied
 #define DEFAULT_MINSEGMENTTIME        20000   // (µs) Set with M205 B.
@@ -2289,8 +2294,12 @@
   //#define BABYSTEP_DISPLAY_TOTAL          // Display total babysteps since last G28
 
   //#define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
-  #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
-    //#define BABYSTEP_HOTEND_Z_OFFSET      // For multiple hotends, babystep relative Z offsets
+  //#define BABYSTEP_GLOBAL_Z               // Combine M424 Z and Babystepping
+
+  #if ANY(BABYSTEP_ZPROBE_OFFSET, BABYSTEP_GLOBAL_Z)
+    #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
+      //#define BABYSTEP_HOTEND_Z_OFFSET    // For multiple hotends, babystep relative Z offsets
+    #endif
     //#define BABYSTEP_GFX_OVERLAY          // Enable graphical overlay on Z-offset editor
   #endif
 #endif
@@ -2537,7 +2546,7 @@
 // @section motion
 
 // Moves (or segments) with fewer steps than this will be joined with the next move
-#define MIN_STEPS_PER_SEGMENT 6
+#define MIN_STEPS_PER_SEGMENT 1
 
 /**
  * Minimum delay before and after setting the stepper DIR (in ns)
@@ -2556,27 +2565,28 @@
 //#define MINIMUM_STEPPER_PRE_DIR_DELAY 650
 
 /**
- * Minimum stepper driver pulse width (in µs)
- *   0 : Smallest possible width the MCU can produce, compatible with TMC2xxx drivers
- *   0 : Minimum 500ns for LV8729, adjusted in stepper.h
- *   1 : Minimum for A4988 and A5984 stepper drivers
- *   2 : Minimum for DRV8825 stepper drivers
- *   3 : Minimum for TB6600 stepper drivers
- *  30 : Minimum for TB6560 stepper drivers
+ * Minimum stepper driver pulse width (in ns)
+ * If undefined, these defaults (from Conditionals_adv.h) apply:
+ *     100 : Minimum for TMC2xxx stepper drivers
+ *     500 : Minimum for LV8729
+ *    1000 : Minimum for A4988 and A5984 stepper drivers
+ *    2000 : Minimum for DRV8825 stepper drivers
+ *    3000 : Minimum for TB6600 stepper drivers
+ *   30000 : Minimum for TB6560 stepper drivers
  *
  * Override the default value based on the driver type set in Configuration.h.
  */
-//#define MINIMUM_STEPPER_PULSE 2
+//#define MINIMUM_STEPPER_PULSE_NS 2000
 
 /**
  * Maximum stepping rate (in Hz) the stepper driver allows
- *  If undefined, defaults to 1MHz / (2 * MINIMUM_STEPPER_PULSE)
+ * If undefined, these defaults (from Conditionals_adv.h) apply:
  *  5000000 : Maximum for TMC2xxx stepper drivers
  *  1000000 : Maximum for LV8729 stepper driver
- *  500000  : Maximum for A4988 stepper driver
- *  250000  : Maximum for DRV8825 stepper driver
- *  150000  : Maximum for TB6600 stepper driver
- *   15000  : Maximum for TB6560 stepper driver
+ *   500000 : Maximum for A4988 stepper driver
+ *   250000 : Maximum for DRV8825 stepper driver
+ *   150000 : Maximum for TB6600 stepper driver
+ *    15000 : Maximum for TB6560 stepper driver
  *
  * Override the default value based on the driver type set in Configuration.h.
  */
@@ -2969,8 +2979,8 @@
 
   #if AXIS_IS_TMC_CONFIG(X)
     #define X_CURRENT       800        // (mA) RMS current. Multiply by 1.414 for peak current.
-    #define X_CURRENT_HOME  X_CURRENT  // (mA) RMS current for sensorless homing
-    #define X_MICROSTEPS     16        // 0..256
+    #define X_CURRENT_HOME  X_CURRENT  // (mA) RMS current for homing. (Typically lower than *_CURRENT.)
+    #define X_MICROSTEPS     64        // 0..256
     #define X_RSENSE          0.11
     #define X_CHAIN_POS      -1        // -1..0: Not chained. 1: MCU MOSI connected. 2: Next in chain, ...
     //#define X_INTERPOLATE  true      // Enable to override 'INTERPOLATE' for the X axis
@@ -2990,7 +3000,7 @@
   #if AXIS_IS_TMC_CONFIG(Y)
     #define Y_CURRENT       800
     #define Y_CURRENT_HOME  Y_CURRENT
-    #define Y_MICROSTEPS     16
+    #define Y_MICROSTEPS     64
     #define Y_RSENSE          0.11
     #define Y_CHAIN_POS      -1
     //#define Y_INTERPOLATE  true
@@ -3010,7 +3020,7 @@
   #if AXIS_IS_TMC_CONFIG(Z)
     #define Z_CURRENT       800
     #define Z_CURRENT_HOME  Z_CURRENT
-    #define Z_MICROSTEPS     16
+    #define Z_MICROSTEPS      8
     #define Z_RSENSE          0.11
     #define Z_CHAIN_POS      -1
     //#define Z_INTERPOLATE  true
@@ -3048,9 +3058,9 @@
   #endif
 
   #if AXIS_IS_TMC_CONFIG(I)
-    #define I_CURRENT      800
+    #define I_CURRENT      700
     #define I_CURRENT_HOME I_CURRENT
-    #define I_MICROSTEPS    16
+    #define I_MICROSTEPS     8
     #define I_RSENSE         0.11
     #define I_CHAIN_POS     -1
     //#define I_INTERPOLATE  true
@@ -3058,9 +3068,9 @@
   #endif
 
   #if AXIS_IS_TMC_CONFIG(J)
-    #define J_CURRENT      800
+    #define J_CURRENT      700
     #define J_CURRENT_HOME J_CURRENT
-    #define J_MICROSTEPS    16
+    #define J_MICROSTEPS     8
     #define J_RSENSE         0.11
     #define J_CHAIN_POS     -1
     //#define J_INTERPOLATE  true
@@ -3179,6 +3189,13 @@
     //#define E7_HOLD_MULTIPLIER 0.5
   #endif
 
+  /**
+   * Use the homing current for all probing. (e.g., Current may be reduced to the
+   * point where a collision makes the motor skip instead of damaging the bed,
+   * though this is unlikely to save delicate probes from being damaged.
+   */
+  //#define PROBING_USE_CURRENT_HOME
+
   // @section tmc/spi
 
   /**
@@ -3213,7 +3230,7 @@
    * The default SW SPI pins are defined the respective pins files,
    * but you can override or define them here.
    */
-  //#define TMC_USE_SW_SPI
+  #define TMC_USE_SW_SPI
   //#define TMC_SPI_MOSI  -1
   //#define TMC_SPI_MISO  -1
   //#define TMC_SPI_SCK   -1
@@ -3404,13 +3421,13 @@
    * Comment *_STALL_SENSITIVITY to disable sensorless homing for that axis.
    * @section tmc/stallguard
    */
-  //#define SENSORLESS_HOMING // StallGuard capable drivers only
+  #define SENSORLESS_HOMING // StallGuard capable drivers only
 
   #if ANY(SENSORLESS_HOMING, SENSORLESS_PROBING)
     // TMC2209: 0...255. TMC2130: -64...63
-    #define X_STALL_SENSITIVITY  8
+    #define X_STALL_SENSITIVITY 60
     #define X2_STALL_SENSITIVITY X_STALL_SENSITIVITY
-    #define Y_STALL_SENSITIVITY  8
+    #define Y_STALL_SENSITIVITY 50
     #define Y2_STALL_SENSITIVITY Y_STALL_SENSITIVITY
     //#define Z_STALL_SENSITIVITY  8
     //#define Z2_STALL_SENSITIVITY Z_STALL_SENSITIVITY
@@ -3423,7 +3440,7 @@
     //#define V_STALL_SENSITIVITY  8
     //#define W_STALL_SENSITIVITY  8
     //#define SPI_ENDSTOPS              // TMC2130/TMC5160 only
-    //#define IMPROVE_HOMING_RELIABILITY
+    #define IMPROVE_HOMING_RELIABILITY
   #endif
 
   // @section tmc/config
@@ -3449,7 +3466,7 @@
    * Enable M122 debugging command for TMC stepper drivers.
    * M122 S0/1 will enable continuous reporting.
    */
-  //#define TMC_DEBUG
+  #define TMC_DEBUG
 
   /**
    * You can set your own advanced settings by filling in predefined functions.
@@ -3501,7 +3518,7 @@
  * echo:i2c-reply: from:99 bytes:5 data:hello
  */
 
-//#define EXPERIMENTAL_I2CBUS
+#define EXPERIMENTAL_I2CBUS
 #if ENABLED(EXPERIMENTAL_I2CBUS)
   #define I2C_SLAVE_ADDRESS  0  // Set a value from 8 to 127 to act as a slave
 #endif
@@ -3835,6 +3852,14 @@
  */
 //#define CNC_COORDINATE_SYSTEMS
 
+/**
+ * CNC Drilling Cycle - UNDER DEVELOPMENT
+ *
+ * Enables G81 to perform a drilling cycle.
+ * Currently only supports a single cycle, no G-code chaining.
+ */
+//#define CNC_DRILLING_CYCLE
+
 // @section security
 
 /**
@@ -3929,8 +3954,17 @@
 #define FASTER_GCODE_PARSER
 
 #if ENABLED(FASTER_GCODE_PARSER)
-  //#define GCODE_QUOTED_STRINGS  // Support for quoted string parameters
+  #define GCODE_QUOTED_STRINGS    // Support for quoted string parameters
 #endif
+
+/**
+ * Variables
+ *
+ * Define a variable from 100-115 with G-code like '#101=19.6'.
+ * A variable can then be used in a G-code expression like 'G0 X[#101+3]'.
+ * See https://gcodetutor.com/cnc-macro-programming/cnc-variables.html
+ */
+//#define GCODE_VARIABLES
 
 /**
  * Support for MeatPack G-code compression (https://github.com/scottmudge/OctoPrint-MeatPack)
@@ -3974,6 +4008,7 @@
 #ifdef G0_FEEDRATE
   //#define VARIABLE_G0_FEEDRATE // The G0 feedrate is set by F in G0 motion mode
 #endif
+//#define G0_ANGULAR_FEEDRATE 2700 // (°/min)
 
 /**
  * Startup commands
