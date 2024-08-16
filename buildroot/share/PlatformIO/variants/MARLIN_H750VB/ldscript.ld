@@ -80,19 +80,14 @@ SECTIONS
   .excode :
   {
     . = ALIGN(4);
-    *Adafruit_NeoPixel.cpp.o(.text, .text*)
-    *SoftwareSerial.cpp.o(.text, .text*)
-    *CHOPCONF.cpp.o(.text, .text*)
-    *DRV_STATUS.cpp.o(.text, .text*)
-    *GCONF.cpp.o(.text, .text*)
-    *COOLCONF.cpp.o(.text, .text*)
-    *SERIAL_SWITCH.cpp.o(.text, .text*)
-    *IHOLD_IRUN.cpp.o(.text, .text*)
-    *PWMCONF.cpp.o(.text, .text*)
-    *Stepper.cpp.o(.text, .text*)
     *tmc_util.cpp.o(.text, .text*)
-    *Wire.cpp.o(.text, .text*)
-    *twi.c.o(.text, .text*)
+    *feature/*.cpp.o(.text, .text*)
+    *host/M*.cpp.o(.text, .text*)
+    *libAdafruit?NeoPixel.a:*(.text, .text*)
+    *libSoftwareSerial.a:*(.text, .text*)
+    *libTMCStepper.a:*(.text, .text*)
+    *libWire.a:*(.text, .text*)
+    *libRS485.a:*(.text, .text*)
   } >XFLASH
 
   /* The startup code into "FLASH" Rom type memory */
