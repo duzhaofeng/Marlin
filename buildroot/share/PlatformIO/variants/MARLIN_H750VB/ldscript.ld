@@ -71,11 +71,30 @@ MEMORY
     RAM_D2	(xrw)	: ORIGIN = 0x30000000,	LENGTH = 288K
     RAM_D3	(xrw)	: ORIGIN = 0x38000000,	LENGTH = 64K
     FLASH	(rx)	: ORIGIN = 0x8000000 + LD_FLASH_OFFSET, LENGTH = LD_MAX_SIZE - LD_FLASH_OFFSET
+    XFLASH	(rx)	: ORIGIN = 0x90000000,  LENGTH = 4096K
 }
 
 /* Sections */
 SECTIONS
 {
+  .excode :
+  {
+    . = ALIGN(4);
+    *Adafruit_NeoPixel.cpp.o(.text, .text*)
+    *SoftwareSerial.cpp.o(.text, .text*)
+    *CHOPCONF.cpp.o(.text, .text*)
+    *DRV_STATUS.cpp.o(.text, .text*)
+    *GCONF.cpp.o(.text, .text*)
+    *COOLCONF.cpp.o(.text, .text*)
+    *SERIAL_SWITCH.cpp.o(.text, .text*)
+    *IHOLD_IRUN.cpp.o(.text, .text*)
+    *PWMCONF.cpp.o(.text, .text*)
+    *Stepper.cpp.o(.text, .text*)
+    *tmc_util.cpp.o(.text, .text*)
+    *Wire.cpp.o(.text, .text*)
+    *twi.c.o(.text, .text*)
+  } >XFLASH
+
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {

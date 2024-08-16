@@ -19,6 +19,7 @@
         "0x3748"
       ]
     ],
+    "ldscript": "ldscript.ld",
     "product_line": "STM32H750xx",
     "variant": "MARLIN_H750VB"
   },
@@ -57,15 +58,15 @@
   "upload": {
     "disable_flushing": false,
     "maximum_ram_size": 1048576,
-    "maximum_size": 2097152,
-    "protocol": "stlink",
+    "maximum_size": 131072,
+    "protocol": "cmsis-dap",
     "protocols": [
       "stlink",
       "dfu",
       "jlink",
       "cmsis-dap"
     ],
-    "offset_address": "0x8020000",
+    "offset_address": "0x8000000",
     "require_upload_port": true,
     "use_1200bps_touch": false,
     "wait_for_upload_port": false
