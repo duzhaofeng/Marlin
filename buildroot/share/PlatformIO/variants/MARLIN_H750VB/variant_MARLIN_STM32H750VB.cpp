@@ -12,6 +12,7 @@
  */
 #ifdef STM32H750xx
 #include "pins_arduino.h"
+#include "norflash.h"
 
 // Digital PinName array
 const PinName digitalPin[] = {
@@ -119,6 +120,35 @@ const uint32_t analogInputPin[] = {
   81  // A15, PC3_C
 };
 
+/* MPU Configuration */
+
+void MPU_Config(void)
+{
+  MPU_Region_InitTypeDef MPU_InitStruct = {0};
+
+  /* Disables the MPU */
+  HAL_MPU_Disable();
+
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+  MPU_InitStruct.BaseAddress = 0x90000000;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_16MB;
+  MPU_InitStruct.SubRegionDisable = 0x0;
+  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
+  MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+  MPU_InitStruct.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+  MPU_InitStruct.IsCacheable = MPU_ACCESS_CACHEABLE;
+  MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+  /* Enables the MPU */
+  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+
+}
+
 /*
  * @brief  System Clock Configuration
  * @param  None
@@ -211,7 +241,7 @@ WEAK void SystemClock_Config(void)
   // USB from PLL1 qclk
   PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
   // QSPI from PLL1 qclk
-  PeriphClkInitStruct.QspiClockSelection = RCC_QSPICLKSOURCE_PLL;
+  PeriphClkInitStruct.QspiClockSelection = RCC_QSPICLKSOURCE_D1HCLK;
   // SDMMC from PLL1 qclk
   PeriphClkInitStruct.SdmmcClockSelection = 0;
   //PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL;
@@ -240,6 +270,10 @@ WEAK void SystemClock_Config(void)
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
     Error_Handler();
   }
+
+  MPU_Config();
+  NORFLASH_Init();
+  NORFLASH_Memory_Mapped_Mode();
 }
 
 #endif /* ARDUINO_GENERIC_* */
