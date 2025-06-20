@@ -47,6 +47,22 @@
           "executable": "bin/openocd",
           "package": "tool-openocd"
         }
+      },
+      "cmsis-dap": {
+        "server": {
+          "package": "tool-openocd",
+          "executable": "bin/openocd",
+          "arguments": [
+            "-s",
+            "$PACKAGE_DIR/scripts",
+            "-f",
+            "interface/cmsis-dap.cfg",
+            "-c",
+            "transport select swd",
+            "-f",
+            "target/lumenpnp_h750.cfg"
+          ]
+        }
       }
     }
   },
@@ -66,7 +82,6 @@
       "jlink",
       "cmsis-dap"
     ],
-    "offset_address": "0x8000000",
     "require_upload_port": true,
     "use_1200bps_touch": false,
     "wait_for_upload_port": false

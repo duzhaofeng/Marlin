@@ -83,6 +83,7 @@ SECTIONS
     *tmc_util.cpp.o(.text, .text*)
     *feature/*.cpp.o(.text, .text*)
     *host/M*.cpp.o(.text, .text*)
+    *config/M*.cpp.o(.text, .text*)
     *libAdafruit?NeoPixel.a:*(.text, .text*)
     *libSoftwareSerial.a:*(.text, .text*)
     *libTMCStepper.a:*(.text, .text*)
