@@ -13,6 +13,7 @@
 #ifdef STM32H750xx
 #include "pins_arduino.h"
 #include "norflash.h"
+#include "norflash_ex.h"
 
 // Digital PinName array
 const PinName digitalPin[] = {
@@ -272,8 +273,8 @@ WEAK void SystemClock_Config(void)
   }
 
   MPU_Config();
-  NORFLASH_Init();
-  NORFLASH_Memory_Mapped_Mode();
+  norflash_init();
+  norflash_ex_enter_mmap();
 }
 
 #endif /* ARDUINO_GENERIC_* */

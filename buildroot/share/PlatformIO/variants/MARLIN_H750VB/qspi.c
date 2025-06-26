@@ -1,171 +1,240 @@
+/**
+ ****************************************************************************************************
+ * @file        qspi.c
+ * @author      ’˝µ„‘≠◊”Õ≈∂”(ALIENTEK)
+ * @version     V1.0
+ * @date        2020-03-29
+ * @brief       QSPI «˝∂Ø¥˙¬Î
+ * @license     Copyright (c) 2020-2032, π„÷› ––«“ÌµÁ◊”ø∆ºº”–œﬁπ´Àæ
+ ****************************************************************************************************
+ * @attention
+ *
+ *  µ—È∆ΩÃ®:’˝µ„‘≠◊” STM32H750ø™∑¢∞Â
+ * ‘⁄œﬂ ”∆µ:www.yuanzige.com
+ * ºº ı¬€Ã≥:www.openedv.com
+ * π´ÀæÕ¯÷∑:www.alientek.com
+ * π∫¬Úµÿ÷∑:openedv.taobao.com
+ *
+ * –ﬁ∏ƒÀµ√˜
+ * V1.0 20200329
+ * µ⁄“ª¥Œ∑¢≤º
+ *
+ ****************************************************************************************************
+ */
+
 #include "qspi.h"
-//////////////////////////////////////////////////////////////////////////////////	 
-//Êú¨Á®ãÂ∫èÂè™‰æõÂ≠¶‰π†‰ΩøÁî®ÔºåÊú™Áªè‰ΩúËÄÖËÆ∏ÂèØÔºå‰∏çÂæóÁî®‰∫éÂÖ∂ÂÆÉ‰ªª‰ΩïÁî®ÈÄî
-//ALIENTEK STM32H7ÂºÄÂèëÊùø
-//QSPIÈ©±Âä®‰ª£Á†Å	   
-//Ê≠£ÁÇπÂéüÂ≠ê@ALIENTEK
-//ÊäÄÊúØËÆ∫Âùõ:www.openedv.com
-//ÂàõÂª∫Êó•Êúü:2017/8/14
-//ÁâàÊú¨ÔºöV1.0
-//ÁâàÊùÉÊâÄÊúâÔºåÁõóÁâàÂøÖÁ©∂„ÄÇ
-//Copyright(C) ÂπøÂ∑ûÂ∏ÇÊòüÁøºÁîµÂ≠êÁßëÊäÄÊúâÈôêÂÖ¨Âè∏ 2014-2024
-//All rights reserved									  
-////////////////////////////////////////////////////////////////////////////////// 	
 
-QSPI_HandleTypeDef hqspi;    //QSPIÂè•ÊüÑ
 
-//Á≠âÂæÖÁä∂ÊÄÅÊ†áÂøó
-//flag:ÈúÄË¶ÅÁ≠âÂæÖÁöÑÊ†áÂøó‰Ωç
-//sta:ÈúÄË¶ÅÁ≠âÂæÖÁöÑÁä∂ÊÄÅ
-//wtime:Á≠âÂæÖÊó∂Èó¥
-//ËøîÂõûÂÄº:0,Á≠âÂæÖÊàêÂäü.
-//	     1,Á≠âÂæÖÂ§±Ë¥•.
-u8 QSPI_Wait_Flag(u32 flag,u8 sta,u32 wtime)
+QSPI_HandleTypeDef g_qspi_handle;    /* QSPIæ‰±˙ */
+
+/**
+ * @brief       µ»¥˝◊¥Ã¨±Í÷æ
+ * @param       flag : –Ë“™µ»¥˝µƒ±Í÷æŒª
+ * @param       sta  : –Ë“™µ»¥˝µƒ◊¥Ã¨
+ * @param       wtime: µ»¥˝ ±º‰
+ * @retval      0, µ»¥˝≥…π¶; 1, µ»¥˝ ß∞‹.
+ */
+uint8_t qspi_wait_flag(uint32_t flag, uint8_t sta, uint32_t wtime)
 {
-	u8 flagsta=0;
-	while(wtime)
-	{
-		flagsta=(QUADSPI->SR&flag)?1:0; 
-		if(flagsta==sta)break;
-		wtime--;
-	}
-	if(wtime)return 0;
-	else return 1;
-}
+    uint8_t flagsta = 0;
 
-//QSPIÂàùÂßãÂåñ
-u8 QSPI_Init(void)
-{
-    hqspi.Instance=QUADSPI;                          //QSPI
-    hqspi.Init.ClockPrescaler=1;                     //QPSIÂàÜÈ¢ëÊØîÔºåW25Q256ÊúÄÂ§ßÈ¢ëÁéá‰∏∫104MÔºå
-                                                            //ÊâÄ‰ª•Ê≠§Â§ÑÂ∫îËØ•‰∏∫2ÔºåQSPIÈ¢ëÁéáÂ∞±‰∏∫200/(1+1)=100MHZ
-    hqspi.Init.FifoThreshold=4;                      //FIFOÈòàÂÄº‰∏∫4‰∏™Â≠óËäÇ
-    hqspi.Init.SampleShifting=QSPI_SAMPLE_SHIFTING_HALFCYCLE;//ÈááÊ†∑Áßª‰ΩçÂçä‰∏™Âë®Êúü(DDRÊ®°Âºè‰∏ã,ÂøÖÈ°ªËÆæÁΩÆ‰∏∫0)
-    hqspi.Init.FlashSize=POSITION_VAL(0X800000)-1;  //SPI FLASHÂ§ßÂ∞èÔºåW25Q64Â§ßÂ∞è‰∏∫8MÂ≠óËäÇ
-    hqspi.Init.ChipSelectHighTime=QSPI_CS_HIGH_TIME_5_CYCLE;//ÁâáÈÄâÈ´òÁîµÂπ≥Êó∂Èó¥‰∏∫5‰∏™Êó∂Èíü(10*5=55ns),Âç≥ÊâãÂÜåÈáåÈù¢ÁöÑtSHSLÂèÇÊï∞
-    hqspi.Init.ClockMode=QSPI_CLOCK_MODE_0;          //Ê®°Âºè0
-    hqspi.Init.FlashID=QSPI_FLASH_ID_1;              //Á¨¨‰∏ÄÁâáflash
-    hqspi.Init.DualFlash=QSPI_DUALFLASH_DISABLE;     //Á¶ÅÊ≠¢ÂèåÈó™Â≠òÊ®°Âºè
-    if(HAL_QSPI_Init(&hqspi)==HAL_OK) return 0;      //QSPIÂàùÂßãÂåñÊàêÂäü
+    while (wtime)
+    {
+        flagsta = (QUADSPI->SR & flag) ? 1 : 0; /* ªÒ»°◊¥Ã¨±Í÷æ */
+
+        if (flagsta == sta)break;
+
+        wtime--;
+    }
+
+    if (wtime)return 0;
     else return 1;
 }
 
-//QSPIÂ∫ïÂ±ÇÈ©±Âä®,ÂºïËÑöÈÖçÁΩÆÔºåÊó∂Èíü‰ΩøËÉΩ
-//Ê≠§ÂáΩÊï∞‰ºöË¢´HAL_QSPI_Init()Ë∞ÉÁî®
-//hqspi:QSPIÂè•ÊüÑ
+/**
+ * @brief       ≥ı ºªØQSPIΩ”ø⁄
+ * @param       Œﬁ
+ * @retval      0, ≥…π¶; 1,  ß∞‹.
+ */
+uint8_t qspi_init(void)
+{
+    g_qspi_handle.Instance = QUADSPI;                                  /* QSPI */
+    g_qspi_handle.Init.ClockPrescaler = 1;                             /* QPSI∑÷∆µ±»£¨BY25Q128◊Ó¥Û∆µ¬ Œ™108M£¨
+                                                                          À˘“‘¥À¥¶”¶∏√Œ™2£¨QSPI∆µ¬ æÕŒ™220/(1+1)=110MHZ
+                                                                          …‘Œ¢”–µ„≥¨∆µ£¨ø…“‘’˝≥£æÕ∫√£¨≤ª––æÕ÷ªƒ‹ΩµµÕ∆µ¬  */
+    g_qspi_handle.Init.FifoThreshold = 4;                              /* FIFO„–÷µŒ™4∏ˆ◊÷Ω⁄ */
+    g_qspi_handle.Init.SampleShifting = QSPI_SAMPLE_SHIFTING_HALFCYCLE;/* ≤…—˘“∆Œª∞Î∏ˆ÷‹∆⁄(DDRƒ£ Ωœ¬,±ÿ–Î…Ë÷√Œ™0) */
+    g_qspi_handle.Init.FlashSize = 25-1;                               /* SPI FLASH¥Û–°£¨BY25Q128¥Û–°Œ™32M◊÷Ω⁄,2^25£¨À˘“‘»°»®÷µ25-1=24 */
+    g_qspi_handle.Init.ChipSelectHighTime = QSPI_CS_HIGH_TIME_5_CYCLE; /* ∆¨—°∏ﬂµÁ∆Ω ±º‰Œ™3∏ˆ ±÷”(9.1*3=27.3ns),º¥ ÷≤·¿Ô√ÊµƒtSHSL≤Œ ˝ */
+    g_qspi_handle.Init.ClockMode = QSPI_CLOCK_MODE_3;                  /* ƒ£ Ω3 */
+    g_qspi_handle.Init.FlashID = QSPI_FLASH_ID_1;                      /* µ⁄“ª∆¨flash */
+    g_qspi_handle.Init.DualFlash = QSPI_DUALFLASH_DISABLE;             /* Ω˚÷πÀ´…¡¥Êƒ£ Ω */
+    
+    if(HAL_QSPI_Init(&g_qspi_handle) == HAL_OK) 
+    {
+        return 0;      /* QSPI≥ı ºªØ≥…π¶ */
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+/**
+ * @brief       QSPIµ◊≤„«˝∂Ø,“˝Ω≈≈‰÷√£¨ ±÷” πƒ‹
+ * @param       hqspi:QSPIæ‰±˙
+ * @note        ¥À∫Ø ˝ª·±ªHAL_QSPI_Init()µ˜”√
+ * @retval      0, ≥…π¶; 1,  ß∞‹.
+ */
 void HAL_QSPI_MspInit(QSPI_HandleTypeDef *hqspi)
 {
     GPIO_InitTypeDef GPIO_Initure;
     
-    __HAL_RCC_QSPI_CLK_ENABLE();        //‰ΩøËÉΩQSPIÊó∂Èíü
-    __HAL_RCC_GPIOB_CLK_ENABLE();       //‰ΩøËÉΩGPIOBÊó∂Èíü
-    __HAL_RCC_GPIOF_CLK_ENABLE();       //‰ΩøËÉΩGPIOFÊó∂Èíü
+    __HAL_RCC_QSPI_CLK_ENABLE();        // πƒ‹QSPI ±÷”
+    __HAL_RCC_GPIOB_CLK_ENABLE();       // πƒ‹GPIOB ±÷”
+    __HAL_RCC_GPIOD_CLK_ENABLE();       // πƒ‹GPIOD ±÷”
+	__HAL_RCC_GPIOE_CLK_ENABLE();       // πƒ‹GPIOE ±÷”
     
-    //ÂàùÂßãÂåñPB6 ÁâáÈÄâ‰ø°Âè∑
-    GPIO_Initure.Pin=GPIO_PIN_6;
-    GPIO_Initure.Mode=GPIO_MODE_AF_PP;          //Â§çÁî®
+    //≥ı ºªØPB10 ∆¨—°–≈∫≈
+    GPIO_Initure.Pin=GPIO_PIN_10;
+    GPIO_Initure.Mode=GPIO_MODE_AF_PP;          //∏¥”√
     GPIO_Initure.Pull=GPIO_PULLUP;              
-    GPIO_Initure.Speed=GPIO_SPEED_FREQ_VERY_HIGH;  //È´òÈÄü
-    GPIO_Initure.Alternate=GPIO_AF10_QUADSPI;   //Â§çÁî®‰∏∫QSPI
+    GPIO_Initure.Speed=GPIO_SPEED_FREQ_VERY_HIGH;  //∏ﬂÀŸ
+    GPIO_Initure.Alternate=GPIO_AF9_QUADSPI;   //∏¥”√Œ™QSPI
     HAL_GPIO_Init(GPIOB,&GPIO_Initure);
     
-    //PF8,9
-    GPIO_Initure.Pin=GPIO_PIN_8|GPIO_PIN_9;
+    //PD11,12,13
+    GPIO_Initure.Pin=GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13;
     GPIO_Initure.Pull=GPIO_NOPULL;              
-    GPIO_Initure.Speed=GPIO_SPEED_FREQ_VERY_HIGH;   //È´òÈÄü
-    HAL_GPIO_Init(GPIOF,&GPIO_Initure);
+    GPIO_Initure.Speed=GPIO_SPEED_FREQ_VERY_HIGH;   //∏ﬂÀŸ
+    HAL_GPIO_Init(GPIOD,&GPIO_Initure);
     
     //PB2
     GPIO_Initure.Pin=GPIO_PIN_2;
-    GPIO_Initure.Alternate=GPIO_AF9_QUADSPI;   //Â§çÁî®‰∏∫QSPI
+    GPIO_Initure.Alternate=GPIO_AF9_QUADSPI;   //∏¥”√Œ™QSPI
     HAL_GPIO_Init(GPIOB,&GPIO_Initure);
     
-    //PF6,7
-    GPIO_Initure.Pin=GPIO_PIN_6|GPIO_PIN_7;
-    HAL_GPIO_Init(GPIOF,&GPIO_Initure);
+    //PE2
+    GPIO_Initure.Pin=GPIO_PIN_2;
+    HAL_GPIO_Init(GPIOE,&GPIO_Initure);
 }
 
-//QSPIÂèëÈÄÅÂëΩ‰ª§
-//cmd:Ë¶ÅÂèëÈÄÅÁöÑÊåá‰ª§
-//addr:ÂèëÈÄÅÂà∞ÁöÑÁõÆÁöÑÂú∞ÂùÄ
-//mode:Ê®°Âºè,ËØ¶ÁªÜ‰ΩçÂÆö‰πâÂ¶Ç‰∏ã:
-//	mode[1:0]:Êåá‰ª§Ê®°Âºè;00,Êó†Êåá‰ª§;01,ÂçïÁ∫ø‰º†ËæìÊåá‰ª§;10,ÂèåÁ∫ø‰º†ËæìÊåá‰ª§;11,ÂõõÁ∫ø‰º†ËæìÊåá‰ª§.
-//	mode[3:2]:Âú∞ÂùÄÊ®°Âºè;00,Êó†Âú∞ÂùÄ;01,ÂçïÁ∫ø‰º†ËæìÂú∞ÂùÄ;10,ÂèåÁ∫ø‰º†ËæìÂú∞ÂùÄ;11,ÂõõÁ∫ø‰º†ËæìÂú∞ÂùÄ.
-//	mode[5:4]:Âú∞ÂùÄÈïøÂ∫¶;00,8‰ΩçÂú∞ÂùÄ;01,16‰ΩçÂú∞ÂùÄ;10,24‰ΩçÂú∞ÂùÄ;11,32‰ΩçÂú∞ÂùÄ.
-//	mode[7:6]:Êï∞ÊçÆÊ®°Âºè;00,Êó†Êï∞ÊçÆ;01,ÂçïÁ∫ø‰º†ËæìÊï∞ÊçÆ;10,ÂèåÁ∫ø‰º†ËæìÊï∞ÊçÆ;11,ÂõõÁ∫ø‰º†ËæìÊï∞ÊçÆ.
-//dmcycle:Á©∫Êåá‰ª§Âë®ÊúüÊï∞
-void QSPI_Send_CMD(u8 cmd,u32 addr,u8 mode,u8 dmcycle)
+/**
+ * @brief       QSPI∑¢ÀÕ√¸¡Ó
+ * @param       cmd : “™∑¢ÀÕµƒ÷∏¡Ó
+ * @param       addr: ∑¢ÀÕµΩµƒƒøµƒµÿ÷∑
+ * @param       mode: ƒ£ Ω,œÍœ∏Œª∂®“Â»Áœ¬:
+ *   @arg       mode[1:0]: ÷∏¡Óƒ£ Ω; 00,Œﬁ÷∏¡Ó;  01,µ•œﬂ¥´ ‰÷∏¡Ó; 10,À´œﬂ¥´ ‰÷∏¡Ó; 11,Àƒœﬂ¥´ ‰÷∏¡Ó.
+ *   @arg       mode[3:2]: µÿ÷∑ƒ£ Ω; 00,Œﬁµÿ÷∑;  01,µ•œﬂ¥´ ‰µÿ÷∑; 10,À´œﬂ¥´ ‰µÿ÷∑; 11,Àƒœﬂ¥´ ‰µÿ÷∑.
+ *   @arg       mode[5:4]: µÿ÷∑≥§∂»; 00,8Œªµÿ÷∑; 01,16Œªµÿ÷∑;     10,24Œªµÿ÷∑;     11,32Œªµÿ÷∑.
+ *   @arg       mode[7:6]:  ˝æ›ƒ£ Ω; 00,Œﬁ ˝æ›;  01,µ•œﬂ¥´ ‰ ˝æ›; 10,À´œﬂ¥´ ‰ ˝æ›; 11,Àƒœﬂ¥´ ‰ ˝æ›.
+ * @param       dmcycle: ø’÷∏¡Ó÷‹∆⁄ ˝
+ * @retval      Œﬁ
+ */
+void qspi_send_cmd(uint8_t cmd, uint32_t addr, uint8_t mode, uint8_t dmcycle)
 {
-	QSPI_CommandTypeDef Cmdhandler;
-    
-	Cmdhandler.Instruction=cmd;									//Êåá‰ª§
-	Cmdhandler.Address=addr;									//Âú∞ÂùÄ
-	Cmdhandler.DummyCycles=dmcycle;								//ËÆæÁΩÆÁ©∫Êåá‰ª§Âë®ÊúüÊï∞
-	
-	if(((mode>>0)&0x03) == 0)
-	Cmdhandler.InstructionMode=QSPI_INSTRUCTION_NONE;			//Êåá‰ª§Ê®°Âºè
-	else if(((mode>>0)&0x03) == 1)
-	Cmdhandler.InstructionMode=QSPI_INSTRUCTION_1_LINE;			//Êåá‰ª§Ê®°Âºè
-	else if(((mode>>0)&0x03) == 2)
-	Cmdhandler.InstructionMode=QSPI_INSTRUCTION_2_LINES;			//Êåá‰ª§Ê®°Âºè
-	else if(((mode>>0)&0x03) == 3)
-	Cmdhandler.InstructionMode=QSPI_INSTRUCTION_4_LINES;			//Êåá‰ª§Ê®°Âºè
-	
-	if(((mode>>2)&0x03) == 0)
-	Cmdhandler.AddressMode=QSPI_ADDRESS_NONE;   					//Âú∞ÂùÄÊ®°Âºè
-	else if(((mode>>2)&0x03) == 1)
-	Cmdhandler.AddressMode=QSPI_ADDRESS_1_LINE;   					//Âú∞ÂùÄÊ®°Âºè
-	else if(((mode>>2)&0x03) == 2)
-	Cmdhandler.AddressMode=QSPI_ADDRESS_2_LINES;   					//Âú∞ÂùÄÊ®°Âºè
-	else if(((mode>>2)&0x03) == 3)
-	Cmdhandler.AddressMode=QSPI_ADDRESS_4_LINES;   					//Âú∞ÂùÄÊ®°Âºè
-	
-	if(((mode>>4)&0x03) == 0)
-	Cmdhandler.AddressSize=QSPI_ADDRESS_8_BITS;   					//Âú∞ÂùÄÈïøÂ∫¶
-	else if(((mode>>4)&0x03) == 1)
-	Cmdhandler.AddressSize=QSPI_ADDRESS_16_BITS;   					//Âú∞ÂùÄÈïøÂ∫¶
-	else if(((mode>>4)&0x03) == 2)
-	Cmdhandler.AddressSize=QSPI_ADDRESS_24_BITS;   					//Âú∞ÂùÄÈïøÂ∫¶
-	else if(((mode>>4)&0x03) == 3)
-	Cmdhandler.AddressSize=QSPI_ADDRESS_32_BITS;   					//Âú∞ÂùÄÈïøÂ∫¶
-	
-	if(((mode>>6)&0x03) == 0)
-	Cmdhandler.DataMode=QSPI_DATA_NONE;             			//Êï∞ÊçÆÊ®°Âºè
-	else if(((mode>>6)&0x03) == 1)
-	Cmdhandler.DataMode=QSPI_DATA_1_LINE;             			//Êï∞ÊçÆÊ®°Âºè
-	else if(((mode>>6)&0x03) == 2)
-	Cmdhandler.DataMode=QSPI_DATA_2_LINES;             			//Êï∞ÊçÆÊ®°Âºè
-	else if(((mode>>6)&0x03) == 3)
-	Cmdhandler.DataMode=QSPI_DATA_4_LINES;             			//Êï∞ÊçÆÊ®°Âºè
-	
-	Cmdhandler.SIOOMode=QSPI_SIOO_INST_EVERY_CMD;				//ÊØèÊ¨°ÈÉΩÂèëÈÄÅÊåá‰ª§
-	Cmdhandler.AlternateByteMode=QSPI_ALTERNATE_BYTES_NONE;		//Êó†‰∫§ÊõøÂ≠óËäÇ
-	Cmdhandler.DdrMode=QSPI_DDR_MODE_DISABLE;					//ÂÖ≥Èó≠DDRÊ®°Âºè
-	Cmdhandler.DdrHoldHalfCycle=QSPI_DDR_HHC_ANALOG_DELAY;
+    QSPI_CommandTypeDef qspi_command_handle;
 
-	HAL_QSPI_Command(&hqspi,&Cmdhandler,5000);
+    qspi_command_handle.Instruction = cmd;                              /* ÷∏¡Ó */
+    qspi_command_handle.Address = addr;                                 /* µÿ÷∑ */
+    qspi_command_handle.DummyCycles = dmcycle;                          /* …Ë÷√ø’÷∏¡Ó÷‹∆⁄ ˝ */
+
+    if(((mode >> 0) & 0x03) == 0)
+    qspi_command_handle.InstructionMode = QSPI_INSTRUCTION_NONE;        /* ÷∏¡Óƒ£ Ω */
+    else if(((mode >> 0) & 0x03) == 1)
+    qspi_command_handle.InstructionMode = QSPI_INSTRUCTION_1_LINE;      /* ÷∏¡Óƒ£ Ω */
+    else if(((mode >> 0) & 0x03) == 2)
+    qspi_command_handle.InstructionMode = QSPI_INSTRUCTION_2_LINES;     /* ÷∏¡Óƒ£ Ω */
+    else if(((mode >> 0) & 0x03) == 3)
+    qspi_command_handle.InstructionMode = QSPI_INSTRUCTION_4_LINES;     /* ÷∏¡Óƒ£ Ω */
+
+    if(((mode >> 2) & 0x03) == 0)
+    qspi_command_handle.AddressMode = QSPI_ADDRESS_NONE;                /* µÿ÷∑ƒ£ Ω */
+    else if(((mode >> 2) & 0x03) == 1)
+    qspi_command_handle.AddressMode = QSPI_ADDRESS_1_LINE;              /* µÿ÷∑ƒ£ Ω */
+    else if(((mode >> 2) & 0x03) == 2)
+    qspi_command_handle.AddressMode = QSPI_ADDRESS_2_LINES;             /* µÿ÷∑ƒ£ Ω */
+    else if(((mode >> 2) & 0x03) == 3)
+    qspi_command_handle.AddressMode = QSPI_ADDRESS_4_LINES;             /* µÿ÷∑ƒ£ Ω */
+
+    if(((mode >> 4)&0x03) == 0)
+    qspi_command_handle.AddressSize = QSPI_ADDRESS_8_BITS;              /* µÿ÷∑≥§∂» */
+    else if(((mode >> 4) & 0x03) == 1)
+    qspi_command_handle.AddressSize = QSPI_ADDRESS_16_BITS;             /* µÿ÷∑≥§∂» */
+    else if(((mode >> 4) & 0x03) == 2)
+    qspi_command_handle.AddressSize = QSPI_ADDRESS_24_BITS;             /* µÿ÷∑≥§∂» */
+    else if(((mode >> 4) & 0x03) == 3)
+    qspi_command_handle.AddressSize = QSPI_ADDRESS_32_BITS;             /* µÿ÷∑≥§∂» */
+
+    if(((mode >> 6) & 0x03) == 0)
+    qspi_command_handle.DataMode=QSPI_DATA_NONE;                        /*  ˝æ›ƒ£ Ω */
+    else if(((mode >> 6) & 0x03) == 1)
+    qspi_command_handle.DataMode = QSPI_DATA_1_LINE;                    /*  ˝æ›ƒ£ Ω */
+    else if(((mode >> 6) & 0x03) == 2)
+    qspi_command_handle.DataMode = QSPI_DATA_2_LINES;                   /*  ˝æ›ƒ£ Ω */
+    else if(((mode >> 6) & 0x03) == 3)
+    qspi_command_handle.DataMode = QSPI_DATA_4_LINES;                   /*  ˝æ›ƒ£ Ω */
+
+    qspi_command_handle.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;            /* √ø¥Œ∂º∑¢ÀÕ÷∏¡Ó */
+    qspi_command_handle.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;  /* ŒﬁΩªÃÊ◊÷Ω⁄ */
+    qspi_command_handle.DdrMode = QSPI_DDR_MODE_DISABLE;                /* πÿ±’DDRƒ£ Ω */
+    qspi_command_handle.DdrHoldHalfCycle = QSPI_DDR_HHC_ANALOG_DELAY;
+
+    HAL_QSPI_Command(&g_qspi_handle, &qspi_command_handle, 5000);
 }
 
-//QSPIÊé•Êî∂ÊåáÂÆöÈïøÂ∫¶ÁöÑÊï∞ÊçÆ
-//buf:Êé•Êî∂Êï∞ÊçÆÁºìÂÜ≤Âå∫È¶ñÂú∞ÂùÄ
-//datalen:Ë¶Å‰º†ËæìÁöÑÊï∞ÊçÆÈïøÂ∫¶
-//ËøîÂõûÂÄº:0,Ê≠£Â∏∏
-//    ÂÖ∂‰ªñ,ÈîôËØØ‰ª£Á†Å
-u8 QSPI_Receive(u8* buf,u32 datalen)
+/**
+ * @brief       QSPIΩ” ’÷∏∂®≥§∂»µƒ ˝æ›
+ * @param       buf     : Ω” ’ ˝æ›ª∫≥Â«¯ ◊µÿ÷∑
+ * @param       datalen : “™¥´ ‰µƒ ˝æ›≥§∂»
+ * @retval      0, ≥…π¶; ∆‰À˚, ¥ÌŒÛ¥˙¬Î.
+ */
+uint8_t qspi_receive(uint8_t *buf, uint32_t datalen)
 {
-    hqspi.Instance->DLR=datalen-1;                           //ÈÖçÁΩÆÊï∞ÊçÆÈïøÂ∫¶
-    if(HAL_QSPI_Receive(&hqspi,buf,5000)==HAL_OK) return 0;  //Êé•Êî∂Êï∞ÊçÆ
-    else return 1;
+    g_qspi_handle.Instance->DLR = datalen - 1;   /* ≈‰÷√ ˝æ›≥§∂» */
+    if (HAL_QSPI_Receive(&g_qspi_handle, buf, 5000) == HAL_OK) 
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 }
 
-//QSPIÂèëÈÄÅÊåáÂÆöÈïøÂ∫¶ÁöÑÊï∞ÊçÆ
-//buf:ÂèëÈÄÅÊï∞ÊçÆÁºìÂÜ≤Âå∫È¶ñÂú∞ÂùÄ
-//datalen:Ë¶Å‰º†ËæìÁöÑÊï∞ÊçÆÈïøÂ∫¶
-//ËøîÂõûÂÄº:0,Ê≠£Â∏∏
-//    ÂÖ∂‰ªñ,ÈîôËØØ‰ª£Á†Å
-u8 QSPI_Transmit(u8* buf,u32 datalen)
+/**
+ * @brief       QSPI∑¢ÀÕ÷∏∂®≥§∂»µƒ ˝æ›
+ * @param       buf     : ∑¢ÀÕ ˝æ›ª∫≥Â«¯ ◊µÿ÷∑
+ * @param       datalen : “™¥´ ‰µƒ ˝æ›≥§∂»
+ * @retval      0, ≥…π¶; ∆‰À˚, ¥ÌŒÛ¥˙¬Î.
+ */
+uint8_t qspi_transmit(uint8_t *buf, uint32_t datalen)
 {
-    hqspi.Instance->DLR=datalen-1;                            //ÈÖçÁΩÆÊï∞ÊçÆÈïøÂ∫¶
-    if(HAL_QSPI_Transmit(&hqspi,buf,5000)==HAL_OK) return 0;  //ÂèëÈÄÅÊï∞ÊçÆ
-    else return 1;
+    g_qspi_handle.Instance->DLR = datalen - 1; /* ≈‰÷√ ˝æ›≥§∂» */
+    if (HAL_QSPI_Transmit(&g_qspi_handle, buf, 5000) == HAL_OK)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

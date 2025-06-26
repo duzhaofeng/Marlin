@@ -1,25 +1,36 @@
+/**
+ ****************************************************************************************************
+ * @file        qspi.h
+ * @author      ÕıµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
+ * @version     V1.0
+ * @date        2020-03-29
+ * @brief       QSPI Çı¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾
+ ****************************************************************************************************
+ * @attention
+ *
+ * ÊµÑéÆ½Ì¨:ÕıµãÔ­×Ó STM32H750¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
+ *
+ * ĞŞ¸ÄËµÃ÷
+ * V1.0 20200329
+ * µÚÒ»´Î·¢²¼
+ *
+ ****************************************************************************************************
+ */
+
 #ifndef __QSPI_H
 #define __QSPI_H
-#include "Arduino.h"
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-//////////////////////////////////////////////////////////////////////////////////	 
-//æœ¬ç¨‹åºåªä¾›å­¦ä¹ ä½¿ç”¨ï¼Œæœªç»ä½œè€…è®¸å¯ï¼Œä¸å¾—ç”¨äºå…¶å®ƒä»»ä½•ç”¨é€”
-//ALIENTEK STM32H7å¼€å‘æ¿
-//QSPIé©±åŠ¨ä»£ç 	   
-//æ­£ç‚¹åŸå­@ALIENTEK
-//æŠ€æœ¯è®ºå›:www.openedv.com
-//åˆ›å»ºæ—¥æœŸ:2017/8/14
-//ç‰ˆæœ¬ï¼šV1.0
-//ç‰ˆæƒæ‰€æœ‰ï¼Œç›—ç‰ˆå¿…ç©¶ã€‚
-//Copyright(C) å¹¿å·å¸‚æ˜Ÿç¿¼ç”µå­ç§‘æŠ€æœ‰é™å…¬å¸ 2014-2024
-//All rights reserved									  
-////////////////////////////////////////////////////////////////////////////////// 	
-extern QSPI_HandleTypeDef hqspi;    //QSPIå¥æŸ„
 
-u8 QSPI_Init(void);												//åˆå§‹åŒ–QSPI
-void QSPI_Send_CMD(u8 cmd,u32 addr,u8 mode,u8 dmcycle);			//QSPIå‘é€å‘½ä»¤
-u8 QSPI_Receive(u8* buf,u32 datalen);							//QSPIæ¥æ”¶æ•°æ®
-u8 QSPI_Transmit(u8* buf,u32 datalen);							//QSPIå‘é€æ•°æ®
+#include "Arduino.h"
+
+uint8_t qspi_wait_flag(uint32_t flag, uint8_t sta, uint32_t wtime); /* QSPIµÈ´ıÄ³¸ö×´Ì¬ */
+uint8_t qspi_init(void);    /* ³õÊ¼»¯QSPI */
+void qspi_send_cmd(uint8_t cmd, uint32_t addr, uint8_t mode, uint8_t dmcycle);  /* QSPI·¢ËÍÃüÁî */
+uint8_t qspi_receive(uint8_t *buf, uint32_t datalen);   /* QSPI½ÓÊÕÊı¾İ */
+uint8_t qspi_transmit(uint8_t *buf, uint32_t datalen);  /* QSPI·¢ËÍÊı¾İ */
+
 #endif

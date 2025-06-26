@@ -48,7 +48,7 @@
 //
 // Servos
 //
-#define SERVO0_PIN                          PB10
+#define SERVO0_PIN                          PE0
 #define SERVO1_PIN                          PB11
 
 //
@@ -150,10 +150,10 @@
 //
 // Heaters / Fans
 //
-#define FAN0_PIN                            PE2
+#define FAN0_PIN                            PE5
 #define FAN1_PIN                            PE3
-#define FAN2_PIN                            PE4
-#define FAN3_PIN                            PE5
+#define FAN2_PIN                            PE1
+#define FAN3_PIN                            PE4
 
 #define FAN_SOFT_PWM_REQUIRED
 
@@ -161,7 +161,7 @@
 // NeoPixel
 //
 #define BOARD_NEOPIXEL_PIN                  PC7
-#define NEOPIXEL2_PIN                       PC8
+#define NEOPIXEL2_PIN                       PA8
 
 //
 // SPI

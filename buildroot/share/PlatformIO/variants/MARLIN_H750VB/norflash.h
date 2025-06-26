@@ -1,88 +1,99 @@
-#ifndef __NORFLASH_H
-#define __NORFLASH_H
+/**
+ ****************************************************************************************************
+ * @file        norflash.h
+ * @author      ÕıµãÔ­×ÓÍÅ¶Ó(ALIENTEK)
+ * @version     V1.0
+ * @date        2020-03-29
+ * @brief       NOR FLASH(25QXX) Çı¶¯´úÂë
+ * @license     Copyright (c) 2020-2032, ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾
+ ****************************************************************************************************
+ * @attention
+ *
+ * ÊµÑéÆ½Ì¨:ÕıµãÔ­×Ó STM32H750¿ª·¢°å
+ * ÔÚÏßÊÓÆµ:www.yuanzige.com
+ * ¼¼ÊõÂÛÌ³:www.openedv.com
+ * ¹«Ë¾ÍøÖ·:www.alientek.com
+ * ¹ºÂòµØÖ·:openedv.taobao.com
+ *
+ * ĞŞ¸ÄËµÃ÷
+ * V1.0 20200329
+ * µÚÒ»´Î·¢²¼
+ *
+ ****************************************************************************************************
+ */
+
+#ifndef __norflash_H
+#define __norflash_H
+
 #include "Arduino.h"
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-//////////////////////////////////////////////////////////////////////////////////	 
-//æœ¬ç¨‹åºåªä¾›å­¦ä¹ ä½¿ç”¨ï¼Œæœªç»ä½œè€…è®¸å¯ï¼Œä¸å¾—ç”¨äºå…¶å®ƒä»»ä½•ç”¨é€”
-//ALIENTEK STM32H7å¼€å‘æ¿
-//NOR FLASH(W25QXX) QPIæ¨¡å¼é©±åŠ¨ä»£ç 	   
-//æ­£ç‚¹åŸå­@ALIENTEK
-//æŠ€æœ¯è®ºå›:www.openedv.com
-//åˆ›å»ºæ—¥æœŸ:2019/5/4
-//ç‰ˆæœ¬ï¼šV1.0
-//ç‰ˆæƒæ‰€æœ‰ï¼Œç›—ç‰ˆå¿…ç©¶ã€‚
-//Copyright(C) å¹¿å·å¸‚æ˜Ÿç¿¼ç”µå­ç§‘æŠ€æœ‰é™å…¬å¸ 2014-2024
-//All rights reserved									  
-////////////////////////////////////////////////////////////////////////////////// 	
-
-
-//W25Xç³»åˆ—/Qç³»åˆ—èŠ¯ç‰‡åˆ—è¡¨	   
-//W25Q80  ID  0XEF13
-//W25Q16  ID  0XEF14
-//W25Q32  ID  0XEF15
-//W25Q64  ID  0XEF16	
-//W25Q128 ID  0XEF17	
-//W25Q256 ID  0XEF18
-#define W25Q80 	0XEF13 	
-#define W25Q16 	0XEF14
-#define W25Q32 	0XEF15
-#define W25Q64 	0XEF16
-#define W25Q128	0XEF17
-#define W25Q256 0XEF18
-
-extern u16 NORFLASH_TYPE;					//å®šä¹‰W25QXXèŠ¯ç‰‡å‹å·		   
- 
-////////////////////////////////////////////////////////////////////////////////// 
-//æŒ‡ä»¤è¡¨
-#define W25X_WriteEnable		0x06 
-#define W25X_WriteDisable		0x04 
-#define W25X_ReadStatusReg1		0x05 
-#define W25X_ReadStatusReg2		0x35 
-#define W25X_ReadStatusReg3		0x15 
-#define W25X_WriteStatusReg1    0x01 
-#define W25X_WriteStatusReg2    0x31 
-#define W25X_WriteStatusReg3    0x11 
-#define W25X_ReadData			0x03 
-#define W25X_FastReadData		0x0B 
-#define W25X_FastReadDual		0x3B 
-#define W25X_PageProgram		0x02 
-#define W25X_BlockErase			0xD8 
-#define W25X_SectorErase		0x20 
-#define W25X_ChipErase			0xC7 
-#define W25X_PowerDown			0xB9 
-#define W25X_ReleasePowerDown	0xAB 
-#define W25X_DeviceID			0xAB 
-#define W25X_ManufactDeviceID	0x90 
-#define W25X_JedecDeviceID		0x9F 
-#define W25X_Enable4ByteAddr    0xB7
-#define W25X_Exit4ByteAddr      0xE9
-#define W25X_SetReadParam		0xC0 
-#define W25X_EnterQPIMode       0x38
-#define W25X_ExitQPIMode        0xFF
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-void NORFLASH_Init(void);				//åˆå§‹åŒ–W25QXX
-void NORFLASH_Qspi_Enable(void);		//ä½¿èƒ½QSPIæ¨¡å¼
-void NORFLASH_Qspi_Disable(void);		//å…³é—­QSPIæ¨¡å¼
-u16  NORFLASH_ReadID(void);				//è¯»å–FLASH ID
-u8 NORFLASH_ReadSR(u8 regno);			//è¯»å–çŠ¶æ€å¯„å­˜å™¨ 
-void NORFLASH_4ByteAddr_Enable(void);	//ä½¿èƒ½4å­—èŠ‚åœ°å€æ¨¡å¼
-void NORFLASH_Write_SR(u8 regno,u8 sr);	//å†™çŠ¶æ€å¯„å­˜å™¨
-void NORFLASH_Write_Enable(void);  		//å†™ä½¿èƒ½ 
-void NORFLASH_Write_Disable(void);		//å†™ä¿æŠ¤
-void NORFLASH_Write_NoCheck(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite);	//å†™flash,ä¸æ ¡éªŒ
-void NORFLASH_Read(u8* pBuffer,u32 ReadAddr,u16 NumByteToRead);   			//è¯»å–flash
-void NORFLASH_Write(u8* pBuffer,u32 WriteAddr,u16 NumByteToWrite);			//å†™å…¥flash
-void NORFLASH_Erase_Chip(void);    	  		//æ•´ç‰‡æ“¦é™¤
-void NORFLASH_Erase_Sector(u32 Dst_Addr);	//æ‰‡åŒºæ“¦é™¤
-void NORFLASH_Wait_Busy(void);           	//ç­‰å¾…ç©ºé—²
-void NORFLASH_Memory_Mapped_Mode(void);
+/* FLASHĞ¾Æ¬ÁĞ±í */
+#define W25Q80      0XEF13          /* W25Q80   Ğ¾Æ¬ID */
+#define W25Q16      0XEF14          /* W25Q16   Ğ¾Æ¬ID */
+#define W25Q32      0XEF15          /* W25Q32   Ğ¾Æ¬ID */
+#define W25Q64      0XEF16          /* W25Q64   Ğ¾Æ¬ID */
+#define W25Q128     0XEF17          /* W25Q128  Ğ¾Æ¬ID */
+#define W25Q256     0XEF18          /* W25Q256  Ğ¾Æ¬ID */
+#define BY25Q64     0X6816          /* BY25Q64  Ğ¾Æ¬ID */
+#define BY25Q128    0X6817          /* BY25Q128 Ğ¾Æ¬ID */
+#define NM25Q64     0X5216          /* NM25Q64  Ğ¾Æ¬ID */
+#define NM25Q128    0X5217          /* NM25Q128 Ğ¾Æ¬ID */
+
+extern uint16_t norflash_TYPE;      /* ¶¨ÒåFLASHĞ¾Æ¬ĞÍºÅ */
+ 
+/* Ö¸Áî±í */
+#define FLASH_WriteEnable           0x06 
+#define FLASH_WriteDisable          0x04 
+#define FLASH_ReadStatusReg1        0x05 
+#define FLASH_ReadStatusReg2        0x35 
+#define FLASH_ReadStatusReg3        0x15 
+#define FLASH_WriteStatusReg1       0x01 
+#define FLASH_WriteStatusReg2       0x31 
+#define FLASH_WriteStatusReg3       0x11 
+#define FLASH_ReadData              0x03 
+#define FLASH_FastReadData          0x0B 
+#define FLASH_FastReadDual          0x3B 
+#define FLASH_FastReadQuad          0xEB  
+#define FLASH_PageProgram           0x02 
+#define FLASH_PageProgramQuad       0x32 
+#define FLASH_BlockErase            0xD8 
+#define FLASH_SectorErase           0x20 
+#define FLASH_ChipErase             0xC7 
+#define FLASH_PowerDown             0xB9 
+#define FLASH_ReleasePowerDown      0xAB 
+#define FLASH_DeviceID              0xAB 
+#define FLASH_ManufactDeviceID      0x90 
+#define FLASH_JedecDeviceID         0x9F 
+#define FLASH_Enable4ByteAddr       0xB7
+#define FLASH_Exit4ByteAddr         0xE9
+#define FLASH_SetReadParam          0xC0 
+#define FLASH_EnterQPIMode          0x38
+#define FLASH_ExitQPIMode           0xFF
+
+/* ¾²Ì¬º¯Êı */
+static void norflash_wait_busy(void);       /* µÈ´ı¿ÕÏĞ */
+static void norflash_qe_enable(void);       /* Ê¹ÄÜQEÎ» */
+static void norflash_qspi_disable(void);    /* ÍË³öQPIÄ£Ê½ */
+static void norflash_write_page(uint8_t *pbuf, uint32_t addr, uint16_t datalen);    /* Ğ´Èëpage */
+static void norflash_write_nocheck(uint8_t *pbuf, uint32_t addr, uint16_t datalen); /* Ğ´flash,²»´ø²Á³ı */
+
+/* ÆÕÍ¨º¯Êı */
+void norflash_init(void);                   /* ³õÊ¼»¯25QXX */
+uint16_t norflash_read_id(void);            /* ¶ÁÈ¡FLASH ID */
+void norflash_write_enable(void);           /* Ğ´Ê¹ÄÜ */
+void norflash_write_disable(void);          /* Ğ´±£»¤ */
+uint8_t norflash_read_sr(uint8_t regno);    /* ¶ÁÈ¡×´Ì¬¼Ä´æÆ÷ */
+void norflash_write_sr(uint8_t regno,uint8_t sr);   /* Ğ´×´Ì¬¼Ä´æÆ÷ */
+
+void norflash_erase_chip(void);             /* ÕûÆ¬²Á³ı */
+void norflash_erase_sector(uint32_t saddr); /* ÉÈÇø²Á³ı */
+void norflash_read(uint8_t *pbuf, uint32_t addr, uint16_t datalen);     /* ¶ÁÈ¡flash */
+void norflash_write(uint8_t *pbuf, uint32_t addr, uint16_t datalen);    /* Ğ´Èëflash */
 
 #ifdef __cplusplus
 }
