@@ -80,6 +80,7 @@ SECTIONS
   .excode :
   {
     . = ALIGN(4);
+    __excode_start = .;
     *tmc_util.cpp.o(.text, .text*)
     *feature/*.cpp.o(.text, .text*)
     *host/M*.cpp.o(.text, .text*)
@@ -89,7 +90,10 @@ SECTIONS
     *libTMCStepper.a:*(.text, .text*)
     *libWire.a:*(.text, .text*)
     *libRS485.a:*(.text, .text*)
-  } >XFLASH
+
+    . = ALIGN(4);
+    __excode_end = .;
+  } >ITCMRAM AT> XFLASH
 
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :

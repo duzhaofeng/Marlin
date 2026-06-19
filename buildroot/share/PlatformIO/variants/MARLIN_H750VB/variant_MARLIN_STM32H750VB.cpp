@@ -15,6 +15,11 @@
 #include "norflash.h"
 #include "norflash_ex.h"
 
+extern "C" {
+extern const unsigned char __excode_start[];
+extern const unsigned char __excode_end[];
+}
+
 // Digital PinName array
 const PinName digitalPin[] = {
   PA_0,   // D0/A0
@@ -275,6 +280,8 @@ WEAK void SystemClock_Config(void)
   MPU_Config();
   norflash_init();
   norflash_ex_enter_mmap();
+  size_t len = (size_t)((uintptr_t)__excode_end - (uintptr_t)__excode_start);
+  memcpy((void*)__excode_start, (void*)(0x90000000 + (uintptr_t)__excode_start - 0x00000000), len);
 }
 
 #endif /* ARDUINO_GENERIC_* */
